@@ -99,8 +99,15 @@ function App() {
           />
           <ul>
             {formState.files.map((file) => (
-              <li key={file.id}>
-                <em>{file.name}</em>
+              <li
+                key={file.id}
+                style={{
+                  color: file.uploadProgress < 100 ? "gray" : undefined,
+                }}
+              >
+                <em>
+                  {file.name} ({file.uploadProgress})
+                </em>
               </li>
             ))}
           </ul>
