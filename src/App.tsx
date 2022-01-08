@@ -1,24 +1,15 @@
 import { useState } from "react";
-import { uploadFile } from "./api";
+import { uploadFile } from "./utils/api";
+import { FormState } from "./types/FormState";
 
-interface AttachedFile {
-  id: string;
-  name: string;
-  uploadProgress: number;
-}
-
-const initialFormState: {
-  name: string;
-  email: string;
-  files: AttachedFile[];
-} = {
+const initialFormState: FormState = {
   name: "",
   email: "",
   files: [],
 };
 
 function App() {
-  const [formState, setFormState] = useState(() => initialFormState);
+  const [formState, setFormState] = useState<FormState>(initialFormState);
 
   const handleChangeName: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setFormState({ ...formState, name: e.target.value });
