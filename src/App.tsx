@@ -1,21 +1,40 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { uploadFile } from "./utils/api";
-import { FormState } from "./types/FormState";
 
-const initialFormState: FormState = {
+interface AttachedFile {
+  id: string;
+  name: string;
+  uploadProgress: number;
+}
+
+const initialFormState: {
+  name: string;
+  email: string;
+  files: AttachedFile[];
+} = {
   name: "",
   email: "",
   files: [],
 };
 
 function App() {
-  const [formState, setFormState] = useState<FormState>(initialFormState);
+  const [formState, setFormState] = useState(() => initialFormState);
+  const testRef = React.useRef<{
+    name: string;
+    email: string;
+    files: AttachedFile[];
+  }>(formState);
+  testRef.current = formState;
 
   const handleChangeName: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setFormState({ ...formState, name: e.target.value });
+    setFormState((prevState) => {
+      return { ...prevState, name: e.target.value };
+    });
   };
   const handleChangeEmail: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setFormState({ ...formState, email: e.target.value });
+    setFormState((prevState) => {
+      return { ...prevState, email: e.target.value };
+    });
   };
 
   const handleChangeFile: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -23,27 +42,31 @@ function App() {
       const fileObj = e.target.files[0];
       const id = String(+new Date()) + Math.random();
       const findIndexById = (id: string) =>
-        formState.files.findIndex((file) => file.id === id);
-      setFormState({
-        ...formState,
+        testRef.current.files.findIndex((file) => file.id === id);
+
+      testRef.current = {
+        ...testRef.current,
         files: [
-          ...formState.files,
+          ...testRef.current.files,
           { id, name: fileObj.name, uploadProgress: 0 },
         ],
-      });
-      uploadFile(e.target.files[0], (progress) => {
+      };
+      setFormState(testRef.current);
+
+      uploadFile(e.target.files[0], (progress: number) => {
         const idx = findIndexById(id);
-        const prev = formState.files.slice(0, idx);
-        const next = formState.files.slice(idx + 1);
-        const newState = {
-          ...formState,
+        const prev = testRef.current.files.slice(0, idx);
+        const next = testRef.current.files.slice(idx + 1);
+
+        testRef.current = {
+          ...testRef.current,
           files: [
             ...prev,
-            { ...formState.files[idx], uploadProgress: progress },
+            { ...testRef.current.files[idx], uploadProgress: progress },
             ...next,
           ],
         };
-        setFormState(newState);
+        setFormState(testRef.current);
       });
     }
     e.target.value = "";
